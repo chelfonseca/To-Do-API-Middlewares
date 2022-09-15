@@ -11,18 +11,78 @@ const users = [];
 
 function checksExistsUserAccount(request, response, next) {
   // Complete aqui
+  const { username } = request.headers;
+
+  const user = users.find((user) => user.username === username );
+
+  if(!user){
+    return response.status(404).json({ error: "User Account not found!"})
+  }
+
+  request.user = user;
+
+  return next();
 }
 
 function checksCreateTodosUserAvailability(request, response, next) {
   // Complete aqui
+  const { user } = request;
+
+  if(user.pro === false && user.todos.length >= 10){
+    return response.status(403).json(
+      {error : ' Free plan and there is already 10 To Dos created'})
+  }
+
+  return next();
 }
 
 function checksTodoExists(request, response, next) {
   // Complete aqui
+  const { username } = request.headers;
+  const { id } = request.params;
+
+  const user = users.find((user) => user.username === username);
+  const isValidId = validate(id);
+
+  let toDo;
+  
+  if(!user){
+    return response.status(404).json(
+      {error: 'User not found!'})
+  }
+  else if(!isValidId ){
+    return response.status(400).json(
+      {error: 'Id passed is not valid Id!'})
+  }
+  else {
+    toDo = user.todos.find((todo) => todo.id === id);
+  }
+  if(!toDo){
+    return response.status(404).json(
+      {error: 'User and Id do not match!'})
+  }
+  
+  request.user = user;
+  request.todo = toDo;
+
+  return next(); 
+
+
 }
 
 function findUserById(request, response, next) {
   // Complete aqui
+  const { id } = request.params;
+
+  const user = users.find((user) => user.id === id );
+
+  if(!user){
+    return response.status(404).json({ error: "User not found!"})
+  }
+
+  request.user = user;
+
+  return next();
 }
 
 app.post('/users', (request, response) => {
